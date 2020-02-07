@@ -83,7 +83,8 @@ class UserController extends Controller
      * 用户登录
      */
     public function login(Request $request)
-    {
+    {   
+        
         //echo '<pre>';print_r($_POST);echo '</pre>';
         $value = $request->input('name');
         $pass = $request->input('pass');
@@ -91,6 +92,7 @@ class UserController extends Controller
         $u1 = UserModel::where(['name'=>$value])->first();
         $u2 = UserModel::where(['email'=>$value])->first();
         $u3 = UserModel::where(['mobile'=>$value])->first();
+        
         if($u1==NULL && $u2==NULL && $u3==NULL){
             $response = [
                 'errno' => 400004,
@@ -110,6 +112,7 @@ class UserController extends Controller
                 return $response;
             }
         }
+        
         if($u2){        //使用 email 登录
             if(password_verify($pass,$u2->password)){
                 $uid = $u2->id;
@@ -121,6 +124,7 @@ class UserController extends Controller
                 return $response;
             }
         }
+        
         if($u3){        // 使用电话号登录
             if(password_verify($pass,$u3->password)){
                 $uid = $u3->id;
@@ -132,10 +136,13 @@ class UserController extends Controller
                 return $response;
             }
         }
-        $token =  $this->getToken($uid);        //生成token
+      
+        
+       $token =  $this->getToken($uid);        //生成token
         $redis_token_key = 'str:user:token:'.$uid;
-        //echo $redis_token_key;
+    
         Redis::set($redis_token_key,$token,86400);  // 生成token  设置过期时间
+        
         $response = [
             'errno' => 0,
             'msg'   => 'ok',
@@ -146,6 +153,7 @@ class UserController extends Controller
         ];
         return $response;
     }
+    
     /**
      * 生成用户token
      * @param $uid
@@ -161,6 +169,7 @@ class UserController extends Controller
      */
     public function showTime()
     {
+        //echo '<pre>';print_r($_SERVER);echo '</pre>';die;   
         if(empty($_SERVER['HTTP_TOKEN']) || empty($_SERVER['HTTP_UID']))
         {
             $response = [
